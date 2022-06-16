@@ -4,6 +4,8 @@ import com.example.springrestcontroller.dto.UpdateHorseRequest;
 import com.example.springrestcontroller.model.Horse;
 import com.example.springrestcontroller.repository.HorseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,13 +21,21 @@ public class HorseServiceImp implements IHorseService{
 
     //find all horse and return a list
     @Override
-    public List<Horse> findAllHorse(){
-        return horseRepository.findAll();
+    public ResponseEntity findAllHorse(){
+        try{
+            List<Horse> list = horseRepository.findAll();
+            if(list!=null){
+                return new ResponseEntity<>(list, HttpStatus.OK);
+            }
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No List");
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error Exception");
+        }
     }
 
     //find horse while filter trainer id and year
     @Override
-    public List<Horse> filterListHorse(HttpServletRequest request){
+    public ResponseEntity filterListHorse(HttpServletRequest request){
         try {
             //get request/parameter
             int id = Integer.parseInt(request.getParameter("trainer_id"));
@@ -35,18 +45,19 @@ public class HorseServiceImp implements IHorseService{
                 //call query
                 List<Horse> list = horseRepository.findHorseYearAndTrainerId(year, id);
                 if (list != null) {
-                    return list;
+                    return new ResponseEntity<>(list, HttpStatus.OK);
                 }
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No Horse!");
             }
-            return null;
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No trainer id or year!");
         }catch(Exception e) {
-            return null;
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error Exception");
         }
     }
 
     //create horse by ?name
     @Override
-    public boolean createHorse(HttpServletRequest request){
+    public ResponseEntity createHorse(HttpServletRequest request){
         try {
             //get request
             String name = request.getParameter("name");
@@ -59,45 +70,49 @@ public class HorseServiceImp implements IHorseService{
                 //set time by new Date() of the local
                 horse.setFoaled(new Timestamp(DATE_TIME_FORMAT.parse(DATE_TIME_FORMAT.format(new Date())).getTime()));
                 horseRepository.save(horse);
-                return true;
+                return new ResponseEntity<>("Horse has added!", HttpStatus.OK);
             }
-            return false;
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Name is null");
         }catch (Exception e) {
-            return false;
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error Exception");
         }
     }
 
     //update horse name by id
     @Override
-    public String updateHorse(UpdateHorseRequest request){
+    public ResponseEntity updateHorse(UpdateHorseRequest request){
         try {
+            //check null
             if(request.getId() > 0 && request.getNewName() != null && !request.getNewName().isEmpty()) {
+                //update horse, update success will return 1
                 if(horseRepository.updateHorse(request.getId(), request.getNewName()) == 1) {
-                    return "Success!";
+                    return new ResponseEntity<>("Success Updated", HttpStatus.OK);
                 }
-                return "Error Querying: Return 0";
+                return new ResponseEntity<>("Query Error: Return 0", HttpStatus.OK);
             }
-            return "No ID or Horse Name";
+            return new ResponseEntity<>("No ID or Horse Name", HttpStatus.OK);
         }catch (Exception e){
-            return "Error Exception";
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error Exception");
         }
     }
     //delete horse by id
     @Override
-    public String deleteHorse(int id){
+    public ResponseEntity deleteHorse(int id){
         try {
             if(id > 0) {
+                //delete the foreign key first (horse_account)
                 if(horseRepository.deleteHorseAccountWithId(id) == 1) {
+                    //delete horse
                     if(horseRepository.deleteHorseWithId(id) == 1){
-                        return "Delete Success!";
+                        return new ResponseEntity<>("Delete Successful", HttpStatus.OK);
                     }
-                    return "Can't Delete Horse after deleted Horse_Account";
+                    return new ResponseEntity<>("Can't Delete Horse after deleted Horse_Account", HttpStatus.OK);
                 }
-                return "Error Delete: Return 0";
+                return new ResponseEntity<>("Can't delete horse_account", HttpStatus.OK);
             }
-            return "Wrong ID";
+            return new ResponseEntity<>("Wrong ID", HttpStatus.OK);
         }catch (Exception e){
-            return "Error Exception";
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error Exception");
         }
     }
  }

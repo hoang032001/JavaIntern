@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 public interface AccountRepository extends JpaRepository<Account, Integer> {
     Account findByUsername(String username);
+    Boolean existsByUsername(String username);
 
     @Query("select a from Account a where a.username=?1")
     Account findAccountByUsername(String username);

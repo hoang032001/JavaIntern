@@ -2,19 +2,12 @@ package com.example.springrestcontroller.service;
 
 import com.example.springrestcontroller.dto.ChangePasswordRequest;
 import com.example.springrestcontroller.model.Account;
+import org.springframework.http.ResponseEntity;
 
 public interface IAccountService {
-    String randoomToken();
+    ResponseEntity saveAccount(Account account);
 
-    boolean checkEmptyLoginAccount(Account account);
+    ResponseEntity loginAndReturnToken(Account account);
 
-    Boolean checkExistedUsername(Account account);
-
-    Account saveAccount(Account account);
-
-    String loginAndReturnToken(Account account);
-
-    boolean checkNullPasswordAndToken(ChangePasswordRequest request);
-
-    boolean changePassword(String newPassword, String token);
+    ResponseEntity changePassword(ChangePasswordRequest request);
 }

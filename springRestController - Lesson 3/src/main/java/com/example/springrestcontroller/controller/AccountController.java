@@ -4,7 +4,6 @@ import com.example.springrestcontroller.dto.ChangePasswordRequest;
 import com.example.springrestcontroller.model.Account;
 import com.example.springrestcontroller.service.IAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,19 +19,7 @@ public class AccountController {
     @PostMapping("/save")
     @ResponseBody
     public ResponseEntity saveAccount(@RequestBody Account account){
-        try{
-            //check empty
-            if(iAccountService.checkEmptyLoginAccount(account)) {
-                //check existed username
-                if (!iAccountService.checkExistedUsername(account)) {
-                    return new ResponseEntity<>(iAccountService.saveAccount(account), HttpStatus.ACCEPTED);
-                }
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Username already existed!");
-            }
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User Name or Password is Empty! Account Status in range 0 -> 1");
-        }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error Exception");
-        }
+        return  iAccountService.saveAccount(account);
     }
 
     //login by username and password
@@ -41,16 +28,7 @@ public class AccountController {
     @PostMapping("/login")
     @ResponseBody
     public ResponseEntity<String> loginAccount(@RequestBody Account account){
-        try{
-            //check empty
-            if(iAccountService.checkEmptyLoginAccount(account)){
-                //login successful will return a token
-                return new ResponseEntity<>("Your Token: " + iAccountService.loginAndReturnToken(account), HttpStatus.OK);
-            }
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Wrong Account");
-        }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error Exception");
-        }
+        return iAccountService.loginAndReturnToken(account);
     }
 
     //change password will need your token for update password
@@ -61,17 +39,6 @@ public class AccountController {
     @PostMapping("/change_password")
     @ResponseBody
     public ResponseEntity changePassword(@RequestBody ChangePasswordRequest request){
-        try{
-            //check pass and token
-            if (iAccountService.checkNullPasswordAndToken(request)) {
-                //call to service
-                if (iAccountService.changePassword(request.getNewPassword(), request.getToken())) {
-                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Password Changed");
-                }
-            }
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Wrong or Empty new Password and Token");
-        }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error Exception");
-        }
+        return iAccountService.changePassword(request);
     }
 }

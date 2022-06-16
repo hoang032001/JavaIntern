@@ -2,19 +2,20 @@ package com.example.springrestcontroller.service;
 
 import com.example.springrestcontroller.dto.UpdateHorseRequest;
 import com.example.springrestcontroller.model.Horse;
+import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collection;
 import java.util.List;
 
 public interface IHorseService {
-    List<Horse> findAllHorse();
+    ResponseEntity findAllHorse();
 
-    List<Horse> filterListHorse(HttpServletRequest request);
+    ResponseEntity filterListHorse(HttpServletRequest request);
 
-    boolean createHorse(HttpServletRequest request);
+    ResponseEntity createHorse(HttpServletRequest request);
 
-    String updateHorse(UpdateHorseRequest request);
+    ResponseEntity updateHorse(UpdateHorseRequest request);
 
-    String deleteHorse(int id);
+    ResponseEntity deleteHorse(int id);
 }

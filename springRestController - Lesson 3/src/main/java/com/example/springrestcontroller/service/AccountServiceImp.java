@@ -5,11 +5,12 @@ import com.example.springrestcontroller.model.Account;
 import com.example.springrestcontroller.repository.AccountRepository;
 import com.example.springrestcontroller.singelon.SingelonHashMap;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
-import java.util.Collections;
 import java.util.Map;
 import java.util.stream.IntStream;
 
@@ -18,8 +19,8 @@ public class AccountServiceImp implements IAccountService{
     @Autowired
     AccountRepository accountRepository;
 
-    @Override
-    public String randoomToken(){
+    //generate a String randomly 30 characters
+    private String randoomToken(){
         String characters="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
         SecureRandom rnd = new SecureRandom();
         StringBuffer sb = new StringBuffer();
@@ -27,8 +28,8 @@ public class AccountServiceImp implements IAccountService{
         return sb.toString();
     }
 
-    @Override
-    public boolean checkEmptyLoginAccount(Account account){
+    //Just check empty, null and >0
+    private boolean checkEmptyLoginAccount(Account account){
         if(account != null) {
             if(account.getPassword() != null && account.getUsername() != null
                     && account.getStatus() >= 0 && account.getStatus() <= 1)
@@ -40,56 +41,65 @@ public class AccountServiceImp implements IAccountService{
         return false;
     }
 
-    @Override
-    public Boolean checkExistedUsername(Account account){
+    //check existed username
+    private Boolean checkExistedUsername(Account account){
         try {
-            Account accountTemp = accountRepository.findByUsername(account.getUsername());
-            if(accountTemp != null){
-                return true;
-            }
-            return false;
+            return accountRepository.existsByUsername(account.getUsername());
         }catch (Exception e){
             return true;
         }
     }
 
+    //create new account
     @Override
-    public Account saveAccount(Account account){
+    public ResponseEntity saveAccount(Account account){
         try {
-            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(16);
-            account.setPassword(encoder.encode(account.getPassword()));
-            return accountRepository.save(account);
+            //check empty
+            if(checkEmptyLoginAccount(account)) {
+                //check existed username
+                if (!checkExistedUsername(account)) {
+                    //encrypt password
+                    BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(16);
+                    account.setPassword(encoder.encode(account.getPassword()));
+                    return new ResponseEntity<>(accountRepository.save(account), HttpStatus.ACCEPTED);
+                }
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Username already existed!");
+            }
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User Name or Password is Empty! Account Status in range 0 -> 1");
         }catch (Exception e){
-            return null;
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error Exception");
         }
     }
 
+    //login account then return a token
     @Override
-    public String loginAndReturnToken(Account account){
+    public ResponseEntity loginAndReturnToken(Account account){
         try {
-            //get Account (for password) by username first
-            Account getAccount = accountRepository.findAccountByUsername(account.getUsername());
-            //create an encoder
-            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-            if(getAccount != null) {
-                //compare getAccount.getPassword() from db with this account.getPassword()
-                if (encoder.matches(account.getPassword(), getAccount.getPassword())) {
-                    //release token
-                    String token = randoomToken();
-                    //save token to singelon hashMap
-                    Map<String, Integer> map = SingelonHashMap.getIns().getSingelonMap();
-                    map.put(token, getAccount.getId());
-                    return token;
+            if(checkEmptyLoginAccount(account)) {
+                //get Account (for password) by username first
+                Account getAccount = accountRepository.findAccountByUsername(account.getUsername());
+                //create an encoder
+                BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+                if (getAccount != null) {
+                    //compare getAccount.getPassword() from db with this account.getPassword()
+                    if (encoder.matches(account.getPassword(), getAccount.getPassword())) {
+                        //release token
+                        String token = randoomToken();
+                        //save token to singelon hashMap
+                        Map<String, Integer> map = SingelonHashMap.getIns().getSingelonMap();
+                        map.put(token, getAccount.getId());
+                        return new ResponseEntity<>("Your Token: " + token, HttpStatus.OK);
+                    }
                 }
             }
-            return null;
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Wrong Account");
         }catch (Exception e){
-            return null;
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error Exception");
         }
     }
 
-    @Override
-    public boolean checkNullPasswordAndToken(ChangePasswordRequest request){
+    //check null and empty
+    private boolean checkNullPasswordAndToken(ChangePasswordRequest request){
         if(request != null){
             if(request.getNewPassword() != null && request.getToken() != null){
                 if(!request.getToken().isEmpty() && !request.getNewPassword().isEmpty()){
@@ -100,24 +110,27 @@ public class AccountServiceImp implements IAccountService{
         return false;
     }
 
+    //change password after get token
     @Override
-    public boolean changePassword(String newPassword, String token){
+    public ResponseEntity changePassword(ChangePasswordRequest request){
         try{
-            //get map from singelon
-            Map<String, Integer> map = SingelonHashMap.getIns().getSingelonMap();
-            //check key
-            if(map.containsKey(token)) {
-                //encrypt a new password
-                BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-                String pass = encoder.encode(newPassword);
-                //get user id
-                Integer id = map.get(token);
-                accountRepository.updatePasswordById(pass, id);
-                return true;
+            if(checkNullPasswordAndToken(request)) {
+                //get map from singelon
+                Map<String, Integer> map = SingelonHashMap.getIns().getSingelonMap();
+                //check key
+                if (map.containsKey(request.getToken())) {
+                    //encrypt a new password
+                    BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+                    String pass = encoder.encode(request.getToken());
+                    //get user id
+                    Integer id = map.get(request.getToken());
+                    accountRepository.updatePasswordById(pass, id);
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Password Changed");
+                }
             }
-            return false;
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Wrong or Empty new Password and Token");
         }catch (Exception e){
-            return false;
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error Exception");
         }
     }
 }

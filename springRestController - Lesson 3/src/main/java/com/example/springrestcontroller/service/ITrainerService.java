@@ -1,9 +1,10 @@
 package com.example.springrestcontroller.service;
 
 import com.example.springrestcontroller.dto.UpdateTrainerRequest;
+import org.springframework.http.ResponseEntity;
 
 public interface ITrainerService {
-    String updateTrainer(UpdateTrainerRequest request);
+    ResponseEntity updateTrainer(UpdateTrainerRequest request);
 
-    String deleteTrainer(Integer id);
+    ResponseEntity deleteTrainer(Integer id);
 }
