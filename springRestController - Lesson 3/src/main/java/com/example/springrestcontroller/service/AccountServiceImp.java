@@ -32,10 +32,9 @@ public class AccountServiceImp implements IAccountService{
     private boolean checkEmptyLoginAccount(Account account){
         if(account != null) {
             if(account.getPassword() != null && account.getUsername() != null
-                    && account.getStatus() >= 0 && account.getStatus() <= 1)
-            //
-            if (!account.getUsername().isEmpty() && !account.getPassword().isEmpty()) {
-                return true;
+                    && account.getStatus() >= 0 && account.getStatus() <= 1) {
+                //
+                return !account.getUsername().isEmpty() && !account.getPassword().isEmpty();
             }
         }
         return false;
@@ -102,9 +101,7 @@ public class AccountServiceImp implements IAccountService{
     private boolean checkNullPasswordAndToken(ChangePasswordRequest request){
         if(request != null){
             if(request.getNewPassword() != null && request.getToken() != null){
-                if(!request.getToken().isEmpty() && !request.getNewPassword().isEmpty()){
-                    return true;
-                }
+                return !request.getToken().isEmpty() && !request.getNewPassword().isEmpty();
             }
         }
         return false;

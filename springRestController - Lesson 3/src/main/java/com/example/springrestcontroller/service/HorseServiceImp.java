@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class HorseServiceImp implements IHorseService{
@@ -31,7 +32,7 @@ public class HorseServiceImp implements IHorseService{
     public ResponseEntity findAllHorse(){
         try{
             List<Horse> list = horseRepository.findAll();
-            if(list!=null){
+            if(!list.isEmpty()){
                 return new ResponseEntity<>(list, HttpStatus.OK);
             }
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No List");
@@ -50,9 +51,13 @@ public class HorseServiceImp implements IHorseService{
             //check > 0
             if (id > 0) {
                 //call query
-                List<Object> list = horseRepositoryEntityManager.findFilter(year, id);
+                List<Object[]> list = horseRepositoryEntityManager.findFilter(year, id);
                 if (list != null && !list.isEmpty()) {
-                    return new ResponseEntity<>(list, HttpStatus.OK);
+                    List<Horse> listH = new ArrayList<>();
+                    //object[0] is Horse.class
+                    //object[1] is Trainer.class
+                    list.forEach(x -> listH.add((Horse) x[0]));
+                    return new ResponseEntity<>(listH, HttpStatus.OK);
                 }
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No Horse!");
             }

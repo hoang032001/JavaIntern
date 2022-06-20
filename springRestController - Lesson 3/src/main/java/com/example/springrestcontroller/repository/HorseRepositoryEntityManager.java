@@ -24,7 +24,7 @@ public class HorseRepositoryEntityManager {
     }
 
     //filter
-    public List<Object> findFilter(Integer year, Integer id){
+    public List<Object[]> findFilter(Integer year, Integer id){
 //        String jpql = "select h, t from Horse h inner join HorseAccount ha on ha.horse.id = h.id " +
 //                        "inner join Trainer t on t.account_id = ha.account.id " +
 //                        "where (case when ?1 > 0 then YEAR(h.foaled)=?1 and t.id=?2 else t.id=?2 end)";
@@ -37,7 +37,7 @@ public class HorseRepositoryEntityManager {
                 "inner join trainer t on t.account_id = ha.account_id " +
                 "where (case when :year > 0 then YEAR(h.foaled)=:year and t.id=:id else t.id=:id end)";
 
-        List<Object> query = session.createNativeQuery(jpql)
+        List<Object[]> query = session.createNativeQuery(jpql)
                 .addEntity("h", Horse.class)
                 .addEntity("t", Trainer.class)
                 .setParameter("year", year)
