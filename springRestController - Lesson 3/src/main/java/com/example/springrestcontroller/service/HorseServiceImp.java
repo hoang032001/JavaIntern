@@ -1,8 +1,11 @@
 package com.example.springrestcontroller.service;
 
+import com.example.springrestcontroller.dto.SelectFilterHorseRespon;
 import com.example.springrestcontroller.dto.UpdateHorseRequest;
 import com.example.springrestcontroller.model.Horse;
+import com.example.springrestcontroller.model.Trainer;
 import com.example.springrestcontroller.repository.HorseRepository;
+import com.example.springrestcontroller.repository.HorseRepositoryEntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +14,8 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -18,6 +23,8 @@ import java.util.List;
 public class HorseServiceImp implements IHorseService{
     @Autowired
     HorseRepository horseRepository;
+    @Autowired
+    HorseRepositoryEntityManager horseRepositoryEntityManager;
 
     //find all horse and return a list
     @Override
@@ -36,23 +43,23 @@ public class HorseServiceImp implements IHorseService{
     //find horse while filter trainer id and year
     @Override
     public ResponseEntity filterListHorse(HttpServletRequest request){
-        try {
+//        try {
             //get request/parameter
             int id = Integer.parseInt(request.getParameter("trainer_id"));
             int year = Integer.parseInt(request.getParameter("year"));
             //check > 0
-            if (id > 0 && year > 0) {
+            if (id > 0) {
                 //call query
-                List<Horse> list = horseRepository.findHorseYearAndTrainerId(year, id);
-                if (list != null) {
+                List<Object> list = horseRepositoryEntityManager.findFilter(year, id);
+                if (list != null && !list.isEmpty()) {
                     return new ResponseEntity<>(list, HttpStatus.OK);
                 }
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No Horse!");
             }
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No trainer id or year!");
-        }catch(Exception e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error Exception");
-        }
+//        }catch(Exception e) {
+//            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error Exception");
+//        }
     }
 
     //create horse by ?name
