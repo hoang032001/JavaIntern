@@ -1,7 +1,11 @@
 package com.example.springrestcontroller.dto;
 
+import javax.validation.constraints.NotEmpty;
+
 public class UpdateHorseRequest {
+    @NotEmpty
     private String newName;
+    @NotEmpty
     private int id;
 
     public String getNewName() {

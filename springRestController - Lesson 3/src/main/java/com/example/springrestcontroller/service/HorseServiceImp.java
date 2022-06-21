@@ -51,13 +51,9 @@ public class HorseServiceImp implements IHorseService{
             //check > 0
             if (id > 0) {
                 //call query
-                List<Object[]> list = horseRepositoryEntityManager.findFilter(year, id);
+                List<Horse> list = horseRepositoryEntityManager.findFilter(year, id);
                 if (list != null && !list.isEmpty()) {
-                    List<Horse> listH = new ArrayList<>();
-                    //object[0] is Horse.class
-                    //object[1] is Trainer.class
-                    list.forEach(x -> listH.add((Horse) x[0]));
-                    return new ResponseEntity<>(listH, HttpStatus.OK);
+                    return new ResponseEntity<>(list, HttpStatus.OK);
                 }
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No Horse!");
             }

@@ -6,13 +6,16 @@ import com.example.springrestcontroller.service.IHorseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.NotEmpty;
 import java.util.List;
 
 @RestController
 @RequestMapping("/horses")
+@Validated
 public class HorseController {
     @Autowired
     IHorseService iHorseService;
@@ -34,7 +37,7 @@ public class HorseController {
     //Post Man: POST -> http://localhost:8080/horses/save?name=?
     @PostMapping("/save")
     @ResponseBody
-    public ResponseEntity createHorse(HttpServletRequest request){
+    public ResponseEntity createHorse(@NotEmpty HttpServletRequest request){
         return iHorseService.createHorse(request);
     }
 
@@ -42,14 +45,14 @@ public class HorseController {
     //Post Man: PUT -> http://localhost:8080/horses/update/
     //JSON: { "id":? , "newName":"?" }
     @PutMapping("/update")
-    public ResponseEntity updateHorse(@RequestBody UpdateHorseRequest request){
+    public ResponseEntity updateHorse(@NotEmpty @RequestBody UpdateHorseRequest request){
         return iHorseService.updateHorse(request);
     }
 
     //delete horse by id
     //Post Man: DELETE -> http://localhost:8080/horses/delete/?
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity deleteHorse(@PathVariable("id") Integer id){
+    public ResponseEntity deleteHorse(@NotEmpty @PathVariable("id") Integer id){
         return iHorseService.deleteHorse(id);
     }
 }

@@ -1,0 +1,1 @@
+alter table trainer add column test varchar(255)

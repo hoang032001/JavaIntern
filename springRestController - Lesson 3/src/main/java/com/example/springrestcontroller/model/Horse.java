@@ -1,6 +1,7 @@
 package com.example.springrestcontroller.model;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 import java.sql.Timestamp;
 
 @Entity
@@ -9,8 +10,11 @@ public class Horse {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
     @Column(length=255)
+    @NotEmpty(message = "Horse Name cannot be null")
     private String name;
+
     private java.sql.Timestamp foaled;
 
     public Horse(){

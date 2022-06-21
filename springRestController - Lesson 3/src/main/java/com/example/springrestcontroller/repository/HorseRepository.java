@@ -11,10 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 public interface HorseRepository extends JpaRepository<Horse, Integer> {
-    @Query(nativeQuery = true, value = "select h.* from horse h inner join horse_account ha on ha.horse_id = h.id " +
-            "inner join trainer t on t.account_id = ha.account_id " +
-            "where (case when ?1 > 0 then YEAR(h.foaled)=?1 and t.id=?2 else t.id=?2 end)")
-    List<Horse> findHorseYearAndTrainerId(int year, int id);
+//    @Query("select h from Horse h inner join HorseAccount ha on ha.horse = h " +
+//            "inner join Trainer t on t.account = ha.account " +
+//            "where (case when ?1 > 0 then YEAR(h.foaled)=?1 and t.id=?2 else t.id=?2 end)")
+//    List<Horse> findHorseYearAndTrainerId(int year, int id);
 
     @Modifying(clearAutomatically = true)
     @Transactional
